@@ -52,6 +52,12 @@ $(project):
 	go build -o ${BIN_DIR}/$@/${SERVER_BIN} ./$@/${SERVER_DIR}
 	go build -o ${BIN_DIR}/$@/${CLIENT_BIN} ./$@/${CLIENT_DIR}
 
+run_greet_client: ## Run greet client and watch for changes
+	nodemon --exec go run greet/client/main.go --signal SIGTERM
+
+run_greet_server: ## Run greet server and watch for changes
+	nodemon --exec go run greet/server/main.go --signal SIGTERM
+
 test: all ## Launch tests
 	go test ./...
 

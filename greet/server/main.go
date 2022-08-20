@@ -1,11 +1,9 @@
 package main
 
 import (
-	"google.golang.org/grpc"
+	"grpc-playground/greet/server/utils"
 	"log"
 	"net"
-
-	pb "grpc-playground/greet/proto"
 )
 
 const addr = "0.0.0.0:50051"
@@ -18,13 +16,5 @@ func main() {
 	}
 	log.Printf("Listening on %v", addr)
 
-	server := grpc.NewServer()
-
-	if err := server.Serve(lis); err != nil {
-		log.Fatalf("Failed to server %v\n", err)
-	}
-}
-
-type Server struct {
-	pb.GreetServiceServer
+	utils.RegisterServer(lis)
 }
