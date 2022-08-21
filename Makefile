@@ -58,6 +58,9 @@ run_greet_client: ## Run greet client and watch for changes
 run_greet_server: ## Run greet server and watch for changes
 	nodemon --exec go run greet/server/main.go --signal SIGTERM
 
+run_calculator_client: ## Run calculator client and watch for changes
+	nodemon --exec go run calculator/client/main.go --signal SIGTERM
+
 test: all ## Launch tests
 	go test ./...
 

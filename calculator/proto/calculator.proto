@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package calculator;
+
+option go_package = "grpc-playground/calculator/proto";
+
+message SumRequest {
+  double first_number = 1;
+  double secondNumber = 2;
+}
+
+message SumResponse {
+  double total = 1;
+}
+
+service CalculatorService {
+  rpc Sum (SumRequest) returns (SumResponse);
+}
