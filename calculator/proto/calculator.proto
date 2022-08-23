@@ -17,8 +17,14 @@ message Number {
   int64 number = 1;
 }
 
+message NumberFloat {
+  double number = 1;
+}
+
 service CalculatorService {
   rpc Sum (SumRequest) returns (SumResponse);
 
   rpc Primes (Number) returns (stream Number);
+
+  rpc Average (stream NumberFloat) returns (NumberFloat);
 }

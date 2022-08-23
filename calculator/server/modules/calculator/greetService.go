@@ -3,6 +3,7 @@ package calculator
 import (
 	"context"
 	pb "grpc-playground/calculator/proto"
+	"io"
 	"log"
 	"time"
 )
@@ -32,5 +33,34 @@ func (s *Service) Primes(in *pb.Number, stream pb.CalculatorService_PrimesServer
 		}
 	}
 
+	return nil
+}
+
+func (s *Service) Average(stream pb.CalculatorService_AverageServer) error {
+	var res []float64
+
+	for {
+		req, err := stream.Recv()
+
+		if err == io.EOF {
+			output := float64(0)
+			for _, num := range res {
+				output += num
+			}
+
+			err := stream.SendAndClose(&pb.NumberFloat{
+				Number: output / float64(len(res)),
+			})
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+		if err != nil {
+			log.Fatalf("Fail to receive data %v\n", err)
+		}
+
+		res = append(res, req.Number)
+	}
 	return nil
 }

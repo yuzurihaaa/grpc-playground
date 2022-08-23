@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	pb "grpc-playground/calculator/proto"
@@ -10,13 +9,13 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 )
 
 const addr = "localhost:50051"
 
 func main() {
 
-	fmt.Println(os.Args[1:][0])
 	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
@@ -25,7 +24,7 @@ func main() {
 
 	defer conn.Close()
 
-	greetClient := pb.NewCalculatorServiceClient(conn)
+	calculatorClient := pb.NewCalculatorServiceClient(conn)
 	if len(os.Args[1:]) == 2 {
 		first, err := strconv.ParseFloat(os.Args[1:][0], 32)
 		if err != nil {
@@ -36,7 +35,8 @@ func main() {
 			panic(err)
 		}
 
-		doSum(greetClient, first, second)
+		doSum(calculatorClient, first, second)
+		return
 	}
 
 	if len(os.Args[1:]) == 1 {
@@ -44,8 +44,11 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		listenToPrime(greetClient, first)
+		listenToPrime(calculatorClient, first)
+		return
 	}
+
+	sendNumbers(calculatorClient)
 }
 
 func doSum(client pb.CalculatorServiceClient, x, y float64) {
@@ -82,4 +85,39 @@ func listenToPrime(client pb.CalculatorServiceClient, x int64) {
 
 		log.Printf("listenGreet response %v\n", message.Number)
 	}
+}
+
+func sendNumbers(client pb.CalculatorServiceClient) {
+	log.Println("modules.greet - DoGreet")
+
+	reqs := []*pb.NumberFloat{
+		{Number: 2},
+		{Number: 3},
+		{Number: 4},
+	}
+
+	stream, err := client.Average(context.Background())
+
+	if err != nil {
+		log.Fatalf("Fail to greet server %v\n", err)
+	}
+
+	for _, req := range reqs {
+
+		log.Printf("sending %v", req)
+
+		err := stream.Send(req)
+		if err != nil {
+			log.Fatalf("Fail to send data %v\n", err)
+		}
+
+		time.Sleep(time.Second)
+	}
+
+	res, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("Fail to CloseAndRecv %v\n", err)
+	}
+
+	log.Printf("Greet %v", res.Number)
 }
