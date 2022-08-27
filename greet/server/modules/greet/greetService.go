@@ -55,3 +55,30 @@ func (s *Service) LongGreet(stream pb.GreetService_LongGreetServer) error {
 	}
 	return nil
 }
+
+func (s *Service) Greetings(stream pb.GreetService_GreetingsServer) error {
+
+	log.Print("Greetings invoked")
+
+	for {
+		req, err := stream.Recv()
+
+		if err == io.EOF {
+			return nil
+		}
+
+		if err != nil {
+			log.Fatalf("Fail to receive data %v\n", err)
+		}
+
+		res := "Hello " + req.FirstName + "!"
+		err = stream.Send(&pb.GreetResponse{
+			Result: res,
+		})
+
+		if err != nil {
+			log.Fatalf("Fail to receive data %v\n", err)
+		}
+	}
+	return nil
+}
