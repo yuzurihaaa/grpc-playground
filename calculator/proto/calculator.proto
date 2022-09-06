@@ -27,4 +27,6 @@ service CalculatorService {
   rpc Primes (Number) returns (stream Number);
 
   rpc Average (stream NumberFloat) returns (NumberFloat);
+
+  rpc CurrentMax (stream Number) returns (stream Number);
 }

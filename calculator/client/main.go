@@ -49,6 +49,7 @@ func main() {
 	}
 
 	sendNumbers(calculatorClient)
+	CurrentMax(calculatorClient)
 }
 
 func doSum(client pb.CalculatorServiceClient, x, y float64) {
@@ -83,7 +84,7 @@ func listenToPrime(client pb.CalculatorServiceClient, x int64) {
 			log.Fatalf("Fail to receive data %v\n", err)
 		}
 
-		log.Printf("listenGreet response %v\n", message.Number)
+		log.Printf("prime number response %v\n", message.Number)
 	}
 }
 
@@ -120,4 +121,62 @@ func sendNumbers(client pb.CalculatorServiceClient) {
 	}
 
 	log.Printf("Greet %v", res.Number)
+}
+
+func CurrentMax(client pb.CalculatorServiceClient) {
+	log.Println("greetings invoke")
+
+	stream, err := client.CurrentMax(context.Background())
+
+	if err != nil {
+		log.Fatalf("Error creating stream %v\n", err)
+	}
+
+	reqs := []*pb.Number{
+		{Number: 20},
+		{Number: 50},
+		{Number: 40},
+	}
+
+	waitc := make(chan struct{})
+
+	go func() {
+		for _, req := range reqs {
+
+			log.Printf("sending %v", req)
+
+			err := stream.Send(req)
+			if err != nil {
+				log.Fatalf("Fail to send data %v\n", err)
+			}
+
+			time.Sleep(time.Second)
+		}
+
+		err := stream.CloseSend()
+		if err != nil {
+			log.Fatalf("Fail to CloseSend %v\n", err)
+		}
+	}()
+
+	go func() {
+		for {
+			res, err := stream.Recv()
+
+			if err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				log.Printf("Fail to receive data %v\n", err)
+				break
+			}
+
+			log.Printf("Current max %v", res.Number)
+		}
+
+		close(waitc)
+	}()
+
+	<-waitc
 }

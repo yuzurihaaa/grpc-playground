@@ -5,6 +5,7 @@ import (
 	pb "grpc-playground/calculator/proto"
 	"io"
 	"log"
+	"math"
 	"time"
 )
 
@@ -61,6 +62,32 @@ func (s *Service) Average(stream pb.CalculatorService_AverageServer) error {
 		}
 
 		res = append(res, req.Number)
+	}
+	return nil
+}
+
+func (s *Service) CurrentMax(stream pb.CalculatorService_CurrentMaxServer) error {
+	log.Print("CurrentMax invoked")
+	currentMax := 0
+	for {
+		req, err := stream.Recv()
+
+		if err == io.EOF {
+			return nil
+		}
+
+		if err != nil {
+			log.Fatalf("Fail to receive data %v\n", err)
+		}
+
+		currentMax = int(int64(math.Max(float64(req.Number), float64(currentMax))))
+		err = stream.Send(&pb.Number{
+			Number: int64(currentMax),
+		})
+
+		if err != nil {
+			log.Fatalf("Fail to receive data %v\n", err)
+		}
 	}
 	return nil
 }
